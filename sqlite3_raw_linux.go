@@ -71,11 +71,25 @@ func sqlite3_threadsafe() int {
 }
 
 func sqlite3_open_v2(filename string, ppDb *sqlite3, flags int, zVfs string) int {
+	var fn uintptr
+	if len(filename) > 0 {
+		var tfn []byte = []byte(filename)
+		fn = uintptr(unsafe.Pointer(&tfn[0]))
+	} else {
+		fn = uintptr(0)
+	}
+	var vfs uintptr
+	if len(zVfs) > 0 {
+		var tvfs []byte = []byte(zVfs)
+		vfs = uintptr(unsafe.Pointer(&tvfs[0]))
+	} else {
+		vfs = uintptr(0)
+	}
 	retInt := raw_sqlite3_open_v2(
-		[]byte(filename),
+		fn,
 		uintptr(unsafe.Pointer(ppDb)),
 		int32(flags),
-		[]byte(zVfs),
+		vfs,
 	)
 	return int(retInt)
 }

@@ -99,7 +99,8 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	var db sqlite3
 	rv := sqlite3_open_v2(dsn, &db, SQLITE_OPEN_FULLMUTEX|SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, "")
 	if rv != 0 {
-		return nil, Error{Code: ErrNo(rv)}
+		err := Error{Code: ErrNo(rv)}
+		return nil, fmt.Errorf("Error Opening DB: %s", err)
 	}
 	if db == sqlite3(uintptr(0)) {
 		return nil, fmt.Errorf("sqlite succeeded without returning a database")
@@ -107,14 +108,15 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 
 	rv = sqlite3_busy_timeout(db, busyTimeout)
 	if rv != SQLITE_OK {
-		return nil, Error{Code: ErrNo(rv)}
+		err := Error{Code: ErrNo(rv)}
+		return nil, fmt.Errorf("Error setting busy timeout: %s", err)
 	}
 
 	conn := &SQLiteConn{db: db, loc: loc, txlock: txlock}
 
 	if d.ConnectHook != nil {
 		if err := d.ConnectHook(conn); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error in Connect Hook: %s", err)
 		}
 	}
 	runtime.SetFinalizer(conn, (*SQLiteConn).Close)

@@ -47,7 +47,7 @@ func (c *SQLiteConn) exec(ctx context.Context, query string, args []namedValue) 
 			res, err = s.(*SQLiteStmt).exec(ctx, args[:na])
 			if err != nil && err != driver.ErrSkip {
 				s.Close()
-				return nil, err
+				return nil, fmt.Errorf("Error during exec: %s", err)
 			}
 			args = args[na:]
 			start += na
@@ -91,7 +91,7 @@ func (c *SQLiteConn) query(ctx context.Context, query string, args []namedValue)
 		rows, err := s.(*SQLiteStmt).query(ctx, args[:na])
 		if err != nil && err != driver.ErrSkip {
 			s.Close()
-			return rows, err
+			return rows, fmt.Errorf("Error during query: %s", err)
 		}
 		args = args[na:]
 		start += na
@@ -112,7 +112,7 @@ func (c *SQLiteConn) Begin() (driver.Tx, error) {
 
 func (c *SQLiteConn) begin(ctx context.Context) (driver.Tx, error) {
 	if _, err := c.exec(ctx, c.txlock, nil); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error during begin transaction: %s", err)
 	}
 	return &SQLiteTx{c}, nil
 }
@@ -125,7 +125,7 @@ func (c *SQLiteConn) Prepare(query string) (driver.Stmt, error) {
 func (c *SQLiteConn) prepare(ctx context.Context, query string) (driver.Stmt, error) {
 	rv, s, tail := sqlite3_prepare_v2(c.db, query)
 	if rv != SQLITE_OK {
-		return nil, c.lastError()
+		return nil, fmt.Errorf("Error during prepare: %s", c.lastError())
 	}
 	t := strings.TrimSpace(tail)
 	ss := &SQLiteStmt{c: c, s: s, t: t}

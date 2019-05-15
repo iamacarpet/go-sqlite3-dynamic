@@ -41,7 +41,7 @@ func (s *SQLiteStmt) NumInput() int {
 func (s *SQLiteStmt) bind(args []namedValue) error {
 	rv := sqlite3_reset(s.s)
 	if rv != SQLITE_ROW && rv != SQLITE_OK && rv != SQLITE_DONE {
-		return s.c.lastError()
+		return fmt.Errorf("Error during bind: %s", s.c.lastError())
 	}
 
 	for i, v := range args {
@@ -76,7 +76,7 @@ func (s *SQLiteStmt) bind(args []namedValue) error {
 			rv = sqlite3_bind_text(s.s, n, b)
 		}
 		if rv != SQLITE_OK {
-			return s.c.lastError()
+			return fmt.Errorf("Error during bind: %s", s.c.lastError())
 		}
 	}
 	return nil
@@ -165,7 +165,7 @@ func (s *SQLiteStmt) exec(ctx context.Context, args []namedValue) (driver.Result
 		err := s.c.lastError()
 		sqlite3_reset(s.s)
 		sqlite3_clear_bindings(s.s)
-		return nil, err
+		return nil, fmt.Errorf("Error during step: %s", err)
 	}
 
 	return &SQLiteResult{id: rowid, changes: changes}, nil

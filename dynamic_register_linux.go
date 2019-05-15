@@ -24,7 +24,7 @@ var (
 	raw_sqlite3_extended_errcode     func(handle uintptr) int32                                                                         // int sqlite3_extended_errcode(sqlite3 *db);
 	raw_sqlite3_errmsg               func(handle uintptr) []byte                                                                        // const char *sqlite3_errmsg(sqlite3*);
 	raw_sqlite3_threadsafe           func() int32                                                                                       // int sqlite3_threadsafe(void);
-	raw_sqlite3_open_v2              func(filename []byte, outHandle uintptr, flags int32, zVfs []byte) int32                           // int sqlite3_open_v2(const char *filename, sqlite3 **ppDb, int flags, const char *zVfs);
+	raw_sqlite3_open_v2              func(filename uintptr, outHandle uintptr, flags int32, zVfs uintptr) int32                         // int sqlite3_open_v2(const char *filename, sqlite3 **ppDb, int flags, const char *zVfs);
 	raw_sqlite3_busy_timeout         func(handle uintptr, ms int32) int32                                                               // int sqlite3_busy_timeout(sqlite3*, int ms);
 	raw_sqlite3_close_v2             func(handle uintptr) int32                                                                         // int sqlite3_close_v2(sqlite3*);
 	raw_sqlite3_prepare_v2           func(handle uintptr, zSql []byte, nByte int32, outStmtHandle uintptr, outTailHandle uintptr) int32 // int sqlite3_prepare_v2(sqlite3 *db, const char *zSql, int nByte, sqlite3_stmt **ppStmt, const char **pzTail);
@@ -62,7 +62,7 @@ func registerLibrary() {
 		libraryRegisterError = err
 	}
 
-	lib, err := nocgo.Open("/usr/lib/x86_64-linux-gnu/libsqlite3.so.0")
+	lib, err := nocgo.Open("libsqlite3.so.0")
 	if err != nil {
 		registerError(err)
 		return
