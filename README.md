@@ -39,11 +39,61 @@ apt-get -y install libsqlite3-0
 package main
 
 import (
+	"os"
+	"fmt"
 
+	"database/sql"
+
+	"github.com/iamacarpet/go-sqlite3-dynamic"
 )
 
 func main() {
+	resetTime := time.Now()
 
+	fmt.Println(sqlite3.Version())
+
+	db, err := sql.Open(`sqlite3`, "file:"+resetTime.Format("2006-01-02")+"?mode=memory&cache=shared")
+	if err != nil {
+		panic(err)
+	}
+
+	r, err := db.Exec(`CREATE TABLE test (
+		id integer PRIMARY KEY NOT NULL,
+		name varchar(30)
+	)`)
+	if err != nil {
+		panic(err)
+	}
+
+	_ = r
+
+	r, err = db.Exec(`INSERT INTO test(name) VALUES ('first') `)
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	r, err = db.Exec(`INSERT INTO test(name) VALUES ('second') `)
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	db.Close()
 }
 ```
 
@@ -54,10 +104,67 @@ func main() {
 package main
 
 import (
+	"os"
+	"fmt"
 
+	"database/sql"
+
+	"github.com/iamacarpet/go-sqlite3-dynamic"
 )
 
 func main() {
+	path := "test.db"
 
+	f, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+	f.Close()
+
+	fmt.Println(sqlite3.Version())
+
+	db, err := sql.Open(`sqlite3`, path)
+	if err != nil {
+		panic(err)
+	}
+
+	r, err := db.Exec(`CREATE TABLE test (
+		id integer PRIMARY KEY NOT NULL,
+		name varchar(30)
+	)`)
+	if err != nil {
+		panic(err)
+	}
+
+	_ = r
+
+	r, err = db.Exec(`INSERT INTO test(name) VALUES ('first') `)
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	r, err = db.Exec(`INSERT INTO test(name) VALUES ('second') `)
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	_, err = r.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	db.Close()
+	os.Remove(`./test.db`)
 }
 ```
